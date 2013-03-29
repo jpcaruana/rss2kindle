@@ -136,10 +136,6 @@ def isstr(f):
     return isinstance(f, type('')) or isinstance(f, type(u''))
 
 
-def ishtml(t):
-    return type(t) is type(())
-
-
 def contains(a, b):
     return a.find(b) != -1
 
@@ -356,9 +352,8 @@ def run(num=None):
                     # then it's already been sent
                     # and we don't need to do anything more.
 
-                    if frameid in feed.seen:
-                        if feed.seen[frameid] == id:
-                            continue
+                    if frameid in feed.seen and feed.seen[frameid] == id:
+                        continue
 
                     link = entry.get('link', "")
 
