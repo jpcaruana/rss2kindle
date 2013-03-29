@@ -58,7 +58,7 @@ warn = sys.stderr
 
 ### Import Modules ###
 
-import cPickle as pickle, time, os, traceback
+import cPickle as pickle, os, traceback
 
 hash = ()
 try:
@@ -402,9 +402,9 @@ def opmlimport(importfile):
 
     import xml.sax.saxutils
 
-    for f in newfeeds:
-        if f.hasAttribute('xmlUrl'):
-            feedurl = f.getAttribute('xmlUrl')
+    for feed in newfeeds:
+        if feed.hasAttribute('xmlUrl'):
+            feedurl = feed.getAttribute('xmlUrl')
             print 'Adding %s' % xml.sax.saxutils.unescape(feedurl)
             feeds.append(Feed(feedurl))
 
@@ -451,12 +451,6 @@ def reset():
 
     unlock(feeds, feedfileObject)
 
-
-def email(addr):
-    feeds, feedfileObject = load()
-    if feeds and isstr(feeds[0]): feeds[0] = addr
-    else: feeds = [addr] + feeds
-    unlock(feeds, feedfileObject)
 
 if __name__ == '__main__':
     args = sys.argv
