@@ -249,6 +249,58 @@ def read_later(link):
     print link
 
 
+def print_error(exc_type, feed, feednum, http_headers, http_result, http_status):
+    if http_status not in [200, 302]:
+        print >> warn, "W: error %d [%d] %s" % (http_status, feednum, feed.url)
+
+    elif contains(http_headers.get('content-type', 'rss'), 'html'):
+        print >> warn, "W: looks like HTML [%d] %s" % (feednum, feed.url)
+
+    elif http_headers.get('content-length', '1') == '0':
+        print >> warn, "W: empty page [%d] %s" % (feednum, feed.url)
+
+    elif hasattr(socket, 'timeout') and exc_type == socket.timeout:
+        print >> warn, "W: timed out on [%d] %s" % (feednum, feed.url)
+
+    elif exc_type == IOError:
+        print >> warn, 'W: "%s" [%d] %s' % (http_result.bozo_exception, feednum, feed.url)
+
+    elif hasattr(feedparser, 'zlib') and exc_type == feedparser.zlib.error:
+        print >> warn, "W: broken compression [%d] %s" % (feednum, feed.url)
+
+    elif exc_type in socket_errors:
+        exc_reason = http_result.bozo_exception.args[1]
+        print >> warn, "W: %s [%d] %s" % (exc_reason, feednum, feed.url)
+
+    elif exc_type == urllib2.URLError:
+        if http_result.bozo_exception.reason.__class__ in socket_errors:
+            exc_reason = http_result.bozo_exception.reason.args[1]
+        else:
+            exc_reason = http_result.bozo_exception.reason
+        print >> warn, "W: %s [%d] %s" % (exc_reason, feednum, feed.url)
+
+    elif exc_type == AttributeError:
+        print >> warn, "W: %s [%d] %s" % (http_result.bozo_exception, feednum, feed.url)
+
+    elif exc_type == KeyboardInterrupt:
+        raise http_result.bozo_exception
+
+    elif http_result.bozo:
+        print >> warn, 'E: error in [%d] "%s" feed (%s)' % (
+            feednum, feed.url, http_result.get("bozo_exception", "can't process"))
+
+    else:
+        print >> warn, "=== rss2email encountered a problem with this feed ==="
+        print >> warn, "=== See the rss2email FAQ at http://www.allthingsrss.com/rss2email/ for assistance ==="
+        print >> warn, "=== If this occurs repeatedly, send this to lindsey@allthingsrss.com ==="
+        print >> warn, "E:", http_result.get("bozo_exception", "can't process"), feed.url
+        print >> warn, http_result
+        print >> warn, "rss2email", __version__
+        print >> warn, "feedparser", feedparser.__version__
+        print >> warn, "Python", sys.version
+        print >> warn, "=== END HERE ==="
+
+
 def run(num=None):
     feeds, feedfileObject = load()
     try:
@@ -278,58 +330,10 @@ def run(num=None):
                 http_status = http_result.get('status', 200)
                 if VERBOSE > 1:
                     print >> warn, "I: http status", http_status
-                http_headers = http_result.get('headers',{'content-type': 'application/rss+xml', 'content-length': '1'})
-                exc_type = http_result.get("bozo_exception", Exception()).__class__
                 if http_status != 304 and not http_result.entries and not http_result.get('version', ''):
-                    if http_status not in [200, 302]:
-                        print >> warn, "W: error %d [%d] %s" % (http_status, feednum, feed.url)
-
-                    elif contains(http_headers.get('content-type', 'rss'), 'html'):
-                        print >> warn, "W: looks like HTML [%d] %s" % (feednum, feed.url)
-
-                    elif http_headers.get('content-length', '1') == '0':
-                        print >> warn, "W: empty page [%d] %s" % (feednum, feed.url)
-
-                    elif hasattr(socket, 'timeout') and exc_type == socket.timeout:
-                        print >> warn, "W: timed out on [%d] %s" % (feednum, feed.url)
-
-                    elif exc_type == IOError:
-                        print >> warn, 'W: "%s" [%d] %s' % (http_result.bozo_exception, feednum, feed.url)
-
-                    elif hasattr(feedparser, 'zlib') and exc_type == feedparser.zlib.error:
-                        print >> warn, "W: broken compression [%d] %s" % (feednum, feed.url)
-
-                    elif exc_type in socket_errors:
-                        exc_reason = http_result.bozo_exception.args[1]
-                        print >> warn, "W: %s [%d] %s" % (exc_reason, feednum, feed.url)
-
-                    elif exc_type == urllib2.URLError:
-                        if http_result.bozo_exception.reason.__class__ in socket_errors:
-                            exc_reason = http_result.bozo_exception.reason.args[1]
-                        else:
-                            exc_reason = http_result.bozo_exception.reason
-                        print >> warn, "W: %s [%d] %s" % (exc_reason, feednum, feed.url)
-
-                    elif exc_type == AttributeError:
-                        print >> warn, "W: %s [%d] %s" % (http_result.bozo_exception, feednum, feed.url)
-
-                    elif exc_type == KeyboardInterrupt:
-                        raise http_result.bozo_exception
-
-                    elif http_result.bozo:
-                        print >> warn, 'E: error in [%d] "%s" feed (%s)' % (
-                            feednum, feed.url, http_result.get("bozo_exception", "can't process"))
-
-                    else:
-                        print >> warn, "=== rss2email encountered a problem with this feed ==="
-                        print >> warn, "=== See the rss2email FAQ at http://www.allthingsrss.com/rss2email/ for assistance ==="
-                        print >> warn, "=== If this occurs repeatedly, send this to lindsey@allthingsrss.com ==="
-                        print >> warn, "E:", http_result.get("bozo_exception", "can't process"), feed.url
-                        print >> warn, http_result
-                        print >> warn, "rss2email", __version__
-                        print >> warn, "feedparser", feedparser.__version__
-                        print >> warn, "Python", sys.version
-                        print >> warn, "=== END HERE ==="
+                    http_headers = http_result.get('headers',{'content-type': 'application/rss+xml', 'content-length': '1'})
+                    exc_type = http_result.get("bozo_exception", Exception()).__class__
+                    print_error(exc_type, feed, feednum, http_headers, http_result, http_status)
                     continue
 
                 http_result.entries.reverse()
