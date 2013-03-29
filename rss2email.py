@@ -3,7 +3,7 @@
 http://rss2email.infogami.com
 
 Usage:
-  new [emailaddress] (create new feedfile)
+  new (create new feedfile)
   run [--no-send] [num]
   add feedurl
   list
@@ -14,6 +14,7 @@ Usage:
   opmlexport
   opmlimport filename
 """
+
 __version__ = "2.72"
 __author__ = "Lindsey Smith (lindsey@allthingsrss.com)"
 __copyright__ = "(C) 2004 Aaron Swartz. GNU GPL 2 or 3."
@@ -58,6 +59,7 @@ warn = sys.stderr
 
 ### Import Modules ###
 
+from types import DictType
 import cPickle as pickle, os, traceback
 
 hash = ()
@@ -83,23 +85,24 @@ import socket
 
 socket_errors = []
 for e in ['error', 'gaierror']:
-    if hasattr(socket, e): socket_errors.append(getattr(socket, e))
+    if hasattr(socket, e):
+        socket_errors.append(getattr(socket, e))
 
 import feedparser
 
 feedparser.USER_AGENT = "rss2email/" + __version__ + " +http://www.allthingsrss.com/rss2email/"
 feedparser.SANITIZE_HTML = 0
 
-from types import *
-
 ### Utility Functions ###
 
 import threading
 
-class TimeoutError(Exception): pass
+class TimeoutError(Exception):
+    pass
 
 
-class InputError(Exception): pass
+class InputError(Exception):
+    pass
 
 
 def timelimit(timeout, function):
@@ -133,13 +136,16 @@ def timelimit(timeout, function):
     return internal2
 
 
-def isstr(f): return isinstance(f, type('')) or isinstance(f, type(u''))
+def isstr(f):
+    return isinstance(f, type('')) or isinstance(f, type(u''))
 
 
-def ishtml(t): return type(t) is type(())
+def ishtml(t):
+    return type(t) is type(())
 
 
-def contains(a, b): return a.find(b) != -1
+def contains(a, b):
+    return a.find(b) != -1
 
 ### Parsing Utilities ###
 def getID(entry):
