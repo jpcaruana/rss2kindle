@@ -243,6 +243,11 @@ def ifeeds(feeds, num):
     return ifeeds
 
 
+def read_later(link):
+    # TODO : call readability
+    print link
+
+
 def run(num=None):
     feeds, feedfileObject = load()
     try:
@@ -346,8 +351,7 @@ def run(num=None):
 
                     link = entry.get('link', "")
 
-                    # TODO : call readability
-                    print link
+                    read_later(link)
 
                     feed.seen[frameid] = id
 
@@ -491,7 +495,7 @@ def pause(action, args):
 
 
 def main(args):
-    global feedfile, action, send, active, e
+    global feedfile, action, read_later, active, e
     try:
         if len(args) < 3:
             raise InputError, "insufficient args"
@@ -500,8 +504,9 @@ def main(args):
 
         if action == "run":
             if args and args[0] == "--no-send":
-                def send(sender, recipient, subject, body, contenttype, extraheaders=None, smtpserver=None):
-                    if VERBOSE: print 'Not sending:', subject
+                def read_later(link):
+                    if VERBOSE:
+                        print 'Not sending:', link
 
             if args and args[-1].isdigit():
                 run(int(args[-1]))
