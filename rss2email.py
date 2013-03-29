@@ -79,7 +79,7 @@ try:
 except:
     pass
 
-import socket;
+import socket
 
 socket_errors = []
 for e in ['error', 'gaierror']:
@@ -131,8 +131,6 @@ def timelimit(timeout, function):
         return c.result
 
     return internal2
-
-#    return internal
 
 
 def isstr(f): return isinstance(f, type('')) or isinstance(f, type(u''))
@@ -235,88 +233,86 @@ def run(num=None):
         if num: ifeeds = [feeds[num]]
         feednum = 0
 
-        for f in ifeeds:
+        for feed in ifeeds:
             try:
                 feednum += 1
-                if not f.active: continue
+                if not feed.active: continue
 
-                if VERBOSE: print >> warn, 'I: Processing [%d] "%s"' % (feednum, f.url)
-                r = {}
+                if VERBOSE: print >> warn, 'I: Processing [%d] "%s"' % (feednum, feed.url)
+                http_result = {}
                 try:
-                    r = timelimit(FEED_TIMEOUT, parse)(f.url, f.etag, f.modified)
+                    http_result = timelimit(FEED_TIMEOUT, parse)(feed.url, feed.etag, feed.modified)
                 except TimeoutError:
-                    print >> warn, 'W: feed [%d] "%s" timed out' % (feednum, f.url)
+                    print >> warn, 'W: feed [%d] "%s" timed out' % (feednum, feed.url)
                     continue
 
                 # Handle various status conditions, as required
-                if 'status' in r:
-                    if r.status == 301: f.url = r['url']
-                    elif r.status == 410:
-                        print >> warn, "W: feed gone; deleting", f.url
-                        feeds.remove(f)
+                if 'status' in http_result:
+                    if http_result.status == 301: feed.url = http_result['url']
+                    elif http_result.status == 410:
+                        print >> warn, "W: feed gone; deleting", feed.url
+                        feeds.remove(feed)
                         continue
 
-                http_status = r.get('status', 200)
+                http_status = http_result.get('status', 200)
                 if VERBOSE > 1: print >> warn, "I: http status", http_status
-                http_headers = r.get('headers', {
-                'content-type': 'application/rss+xml',
-                'content-length': '1'})
-                exc_type = r.get("bozo_exception", Exception()).__class__
-                if http_status != 304 and not r.entries and not r.get('version', ''):
+                http_headers = http_result.get('headers', {'content-type': 'application/rss+xml','content-length': '1'})
+                exc_type = http_result.get("bozo_exception", Exception()).__class__
+                if http_status != 304 and not http_result.entries and not http_result.get('version', ''):
                     if http_status not in [200, 302]:
-                        print >> warn, "W: error %d [%d] %s" % (http_status, feednum, f.url)
+                        print >> warn, "W: error %d [%d] %s" % (http_status, feednum, feed.url)
 
                     elif contains(http_headers.get('content-type', 'rss'), 'html'):
-                        print >> warn, "W: looks like HTML [%d] %s" % (feednum, f.url)
+                        print >> warn, "W: looks like HTML [%d] %s" % (feednum, feed.url)
 
                     elif http_headers.get('content-length', '1') == '0':
-                        print >> warn, "W: empty page [%d] %s" % (feednum, f.url)
+                        print >> warn, "W: empty page [%d] %s" % (feednum, feed.url)
 
                     elif hasattr(socket, 'timeout') and exc_type == socket.timeout:
-                        print >> warn, "W: timed out on [%d] %s" % (feednum, f.url)
+                        print >> warn, "W: timed out on [%d] %s" % (feednum, feed.url)
 
                     elif exc_type == IOError:
-                        print >> warn, 'W: "%s" [%d] %s' % (r.bozo_exception, feednum, f.url)
+                        print >> warn, 'W: "%s" [%d] %s' % (http_result.bozo_exception, feednum, feed.url)
 
                     elif hasattr(feedparser, 'zlib') and exc_type == feedparser.zlib.error:
-                        print >> warn, "W: broken compression [%d] %s" % (feednum, f.url)
+                        print >> warn, "W: broken compression [%d] %s" % (feednum, feed.url)
 
                     elif exc_type in socket_errors:
-                        exc_reason = r.bozo_exception.args[1]
-                        print >> warn, "W: %s [%d] %s" % (exc_reason, feednum, f.url)
+                        exc_reason = http_result.bozo_exception.args[1]
+                        print >> warn, "W: %s [%d] %s" % (exc_reason, feednum, feed.url)
 
                     elif exc_type == urllib2.URLError:
-                        if r.bozo_exception.reason.__class__ in socket_errors:
-                            exc_reason = r.bozo_exception.reason.args[1]
+                        if http_result.bozo_exception.reason.__class__ in socket_errors:
+                            exc_reason = http_result.bozo_exception.reason.args[1]
                         else:
-                            exc_reason = r.bozo_exception.reason
-                        print >> warn, "W: %s [%d] %s" % (exc_reason, feednum, f.url)
+                            exc_reason = http_result.bozo_exception.reason
+                        print >> warn, "W: %s [%d] %s" % (exc_reason, feednum, feed.url)
 
                     elif exc_type == AttributeError:
-                        print >> warn, "W: %s [%d] %s" % (r.bozo_exception, feednum, f.url)
+                        print >> warn, "W: %s [%d] %s" % (http_result.bozo_exception, feednum, feed.url)
 
                     elif exc_type == KeyboardInterrupt:
-                        raise r.bozo_exception
+                        raise http_result.bozo_exception
 
-                    elif r.bozo:
+                    elif http_result.bozo:
                         print >> warn, 'E: error in [%d] "%s" feed (%s)' % (
-                        feednum, f.url, r.get("bozo_exception", "can't process"))
+                        feednum, feed.url, http_result.get("bozo_exception", "can't process"))
 
                     else:
                         print >> warn, "=== rss2email encountered a problem with this feed ==="
                         print >> warn, "=== See the rss2email FAQ at http://www.allthingsrss.com/rss2email/ for assistance ==="
                         print >> warn, "=== If this occurs repeatedly, send this to lindsey@allthingsrss.com ==="
-                        print >> warn, "E:", r.get("bozo_exception", "can't process"), f.url
-                        print >> warn, r
+                        print >> warn, "E:", http_result.get("bozo_exception", "can't process"), feed.url
+                        print >> warn, http_result
                         print >> warn, "rss2email", __version__
                         print >> warn, "feedparser", feedparser.__version__
                         print >> warn, "Python", sys.version
                         print >> warn, "=== END HERE ==="
                     continue
 
-                r.entries.reverse()
+                http_result.entries.reverse()
 
-                for entry in r.entries:
+                for entry in http_result.entries:
                     id = getID(entry)
 
                     # If TRUST_GUID isn't set, we get back hashes of the content.
@@ -332,25 +328,24 @@ def run(num=None):
                     # then it's already been sent
                     # and we don't need to do anything more.
 
-                    if frameid in f.seen:
-                        if f.seen[frameid] == id: continue
+                    if frameid in feed.seen:
+                        if feed.seen[frameid] == id: continue
 
-                    datetime = time.gmtime()
                     link = entry.get('link', "")
 
                     # TODO : call readability
                     print link
 
-                    f.seen[frameid] = id
+                    feed.seen[frameid] = id
 
-                f.etag, f.modified = r.get('etag', None), r.get('modified', None)
+                feed.etag, feed.modified = http_result.get('etag', None), http_result.get('modified', None)
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
                 print >> warn, "=== rss2email encountered a problem with this feed ==="
                 print >> warn, "=== See the rss2email FAQ at http://www.allthingsrss.com/rss2email/ for assistance ==="
                 print >> warn, "=== If this occurs repeatedly, send this to lindsey@allthingsrss.com ==="
-                print >> warn, "E: could not parse", f.url
+                print >> warn, "E: could not parse", feed.url
                 traceback.print_exc(file=warn)
                 print >> warn, "rss2email", __version__
                 print >> warn, "feedparser", feedparser.__version__
