@@ -14,6 +14,7 @@ Usage:
   opmlexport
   opmlimport filename
 """
+import readability
 
 __version__ = "2.72"
 __author__ = "Lindsey Smith (lindsey@allthingsrss.com)"
@@ -28,6 +29,15 @@ import urllib2
 urllib2.install_opener(urllib2.build_opener())
 
 ### Vaguely Customizable Options ###
+
+
+# Readability
+READABILITY_CONSUMER_KEY = ''
+READABILITY_CONSUMER_SECRET = ''
+
+READABILITY_USER = ''
+READABILITY_PASSWORD = ''
+
 
 # 1: Receive one email per post.
 # 0: Receive an email every time a post changes.
@@ -244,9 +254,9 @@ def ifeeds(feeds, num):
     return ifeeds
 
 
-def read_later(link):
-    # TODO : call readability
-    print link
+def read_later(link, rdd):
+    bookmark = rdd.add_bookmark(url=link)
+    print bookmark
 
 
 def print_error(exc_type, feed, feednum, http_headers, http_result, http_status):
@@ -301,8 +311,14 @@ def print_error(exc_type, feed, feednum, http_headers, http_result, http_status)
         print >> warn, "=== END HERE ==="
 
 
+def readability_login(user, password):
+    xauth_token = (readability.xauth(READABILITY_CONSUMER_KEY, READABILITY_CONSUMER_SECRET, user, password))
+    return readability.oauth(READABILITY_CONSUMER_KEY, READABILITY_CONSUMER_SECRET, token=xauth_token)
+
+
 def run(num=None):
     feeds, feedfileObject = load()
+    rdd = readability_login(READABILITY_USER, READABILITY_PASSWORD)
     try:
         for feednum, feed in enumerate(ifeeds(feeds, num)):
             try:
@@ -361,7 +377,7 @@ def run(num=None):
 
                     link = entry.get('link', "")
 
-                    read_later(link)
+                    read_later(link, rdd)
 
                     feed.seen[frameid] = id
 
@@ -515,7 +531,7 @@ def main(args):
 
         if action == "run":
             if args and args[0] == "--no-send":
-                def read_later(link):
+                def read_later(link, rdd):
                     if VERBOSE:
                         print 'Not sending:', link
 

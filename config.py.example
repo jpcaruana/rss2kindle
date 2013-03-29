@@ -1,5 +1,13 @@
 ### Options for configuring rss2email ###
 
+# Readability
+READABILITY_CONSUMER_KEY = ''
+READABILITY_CONSUMER_SECRET = ''
+
+READABILITY_USER = ''
+READABILITY_PASSWORD = ''
+
+
 # 1: Receive one email per post.
 # 0: Receive an email every time a post changes.
 TRUST_GUID = 1
