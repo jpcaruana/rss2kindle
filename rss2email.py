@@ -159,7 +159,8 @@ def getID(entry):
 
             return entry.id
 
-    if 'link' in entry: return entry.link
+    if 'link' in entry:
+        return entry.link
 
 
 ### Simple Database of Feeds ###
@@ -253,9 +254,11 @@ def run(num=None):
     try:
         for feednum, feed in enumerate(ifeeds(feeds, num)):
             try:
-                if not feed.active: continue
+                if not feed.active:
+                    continue
 
-                if VERBOSE: print >> warn, 'I: Processing [%d] "%s"' % (feednum, feed.url)
+                if VERBOSE:
+                    print >> warn, 'I: Processing [%d] "%s"' % (feednum, feed.url)
                 http_result = {}
                 try:
                     http_result = timelimit(FEED_TIMEOUT, parse)(feed.url, feed.etag, feed.modified)
@@ -265,16 +268,17 @@ def run(num=None):
 
                 # Handle various status conditions, as required
                 if 'status' in http_result:
-                    if http_result.status == 301: feed.url = http_result['url']
+                    if http_result.status == 301:
+                        feed.url = http_result['url']
                     elif http_result.status == 410:
                         print >> warn, "W: feed gone; deleting", feed.url
                         feeds.remove(feed)
                         continue
 
                 http_status = http_result.get('status', 200)
-                if VERBOSE > 1: print >> warn, "I: http status", http_status
-                http_headers = http_result.get('headers',
-                    {'content-type': 'application/rss+xml', 'content-length': '1'})
+                if VERBOSE > 1:
+                    print >> warn, "I: http status", http_status
+                http_headers = http_result.get('headers',{'content-type': 'application/rss+xml', 'content-length': '1'})
                 exc_type = http_result.get("bozo_exception", Exception()).__class__
                 if http_status != 304 and not http_result.entries and not http_result.get('version', ''):
                     if http_status not in [200, 302]:
@@ -338,7 +342,8 @@ def run(num=None):
                     # by associating them with the actual ID (if it exists).
 
                     frameid = entry.get('id')
-                    if not (frameid): frameid = id
+                    if not (frameid):
+                        frameid = id
                     if type(frameid) is DictType:
                         frameid = frameid.values()[0]
 
@@ -347,7 +352,8 @@ def run(num=None):
                     # and we don't need to do anything more.
 
                     if frameid in feed.seen:
-                        if feed.seen[frameid] == id: continue
+                        if feed.seen[frameid] == id:
+                            continue
 
                     link = entry.get('link', "")
 
@@ -459,7 +465,8 @@ def reset():
     feeds, feedfileObject = load()
     if feeds and isstr(feeds[0]):
         ifeeds = feeds[1:]
-    else: ifeeds = feeds
+    else:
+        ifeeds = feeds
     for feed in ifeeds:
         if VERBOSE:
             print "Resetting %d already seen items" % len(feed.seen)
