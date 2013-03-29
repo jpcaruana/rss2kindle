@@ -224,16 +224,24 @@ def add(*urls):
     unlock(feeds, feedfileObject)
 
 
+def ifeeds(feeds, num):
+    """
+    very obscure method
+    """
+    if feeds and isstr(feeds[0]):
+        ifeeds = feeds[1:]
+    else:
+        ifeeds = feeds
+    if num:
+        ifeeds = [feeds[num]]
+    return ifeeds
+
+
 def run(num=None):
     feeds, feedfileObject = load()
     try:
-        if feeds and isstr(feeds[0]): default_to = feeds[0]; ifeeds = feeds[1:]
-        else: ifeeds = feeds
-
-        if num: ifeeds = [feeds[num]]
         feednum = 0
-
-        for feed in ifeeds:
+        for feed in ifeeds(feeds, num):
             try:
                 feednum += 1
                 if not feed.active: continue
