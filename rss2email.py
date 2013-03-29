@@ -452,7 +452,8 @@ def reset():
     unlock(feeds, feedfileObject)
 
 
-if __name__ == '__main__':
+def main():
+    global args, feedfile, action, send, active, e
     args = sys.argv
     try:
         if len(args) < 3: raise InputError, "insufficient args"
@@ -508,3 +509,6 @@ if __name__ == '__main__':
         print "E:", e
         print
         print __doc__
+
+if __name__ == '__main__':
+    main()
