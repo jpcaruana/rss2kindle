@@ -240,10 +240,8 @@ def ifeeds(feeds, num):
 def run(num=None):
     feeds, feedfileObject = load()
     try:
-        feednum = 0
-        for feed in ifeeds(feeds, num):
+        for feednum, feed in enumerate(ifeeds(feeds, num)):
             try:
-                feednum += 1
                 if not feed.active: continue
 
                 if VERBOSE: print >> warn, 'I: Processing [%d] "%s"' % (feednum, feed.url)
