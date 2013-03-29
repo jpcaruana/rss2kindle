@@ -181,7 +181,7 @@ def load(lock=1):
         if unix:
             locktype = fcntl.LOCK_EX
             fcntl.flock(feedfileObject.fileno(), locktype)
-        #HACK: to deal with lock caching
+            #HACK: to deal with lock caching
         feedfileObject = open(feedfile, 'r')
         feeds = pickle.load(feedfileObject)
         if unix:
@@ -262,7 +262,8 @@ def run(num=None):
 
                 http_status = http_result.get('status', 200)
                 if VERBOSE > 1: print >> warn, "I: http status", http_status
-                http_headers = http_result.get('headers', {'content-type': 'application/rss+xml','content-length': '1'})
+                http_headers = http_result.get('headers',
+                    {'content-type': 'application/rss+xml', 'content-length': '1'})
                 exc_type = http_result.get("bozo_exception", Exception()).__class__
                 if http_status != 304 and not http_result.entries and not http_result.get('version', ''):
                     if http_status not in [200, 302]:
@@ -302,7 +303,7 @@ def run(num=None):
 
                     elif http_result.bozo:
                         print >> warn, 'E: error in [%d] "%s" feed (%s)' % (
-                        feednum, feed.url, http_result.get("bozo_exception", "can't process"))
+                            feednum, feed.url, http_result.get("bozo_exception", "can't process"))
 
                     else:
                         print >> warn, "=== rss2email encountered a problem with this feed ==="
@@ -449,20 +450,47 @@ def reset():
     if feeds and isstr(feeds[0]):
         ifeeds = feeds[1:]
     else: ifeeds = feeds
-    for f in ifeeds:
-        if VERBOSE: print "Resetting %d already seen items" % len(f.seen)
-        f.seen = {}
-        f.etag = None
-        f.modified = None
+    for feed in ifeeds:
+        if VERBOSE:
+            print "Resetting %d already seen items" % len(feed.seen)
+        feed.seen = {}
+        feed.etag = None
+        feed.modified = None
 
     unlock(feeds, feedfileObject)
+
+
+def new_feedfile(feedfile):
+    pickle.dump([], open(feedfile, 'w'))
+
+
+def delete_feed(action, args):
+    if not args:
+        raise InputError, "Action '%s' requires an argument" % action
+    elif args[0].isdigit():
+        delete(int(args[0]))
+    else:
+        raise InputError, "Action '%s' requires a number as its argument" % action
+
+
+def pause(action, args):
+    global active
+    if not args:
+        raise InputError, "Action '%s' requires an argument" % action
+    elif args[0].isdigit():
+        active = (action == "unpause")
+        toggleactive(int(args[0]), active)
+    else:
+        raise InputError, "Action '%s' requires a number as its argument" % action
 
 
 def main():
     global args, feedfile, action, send, active, e
     args = sys.argv
     try:
-        if len(args) < 3: raise InputError, "insufficient args"
+        if len(args) < 3:
+            raise InputError, "insufficient args"
+
         feedfile, action, args = args[1], args[2], args[3:]
 
         if action == "run":
@@ -470,38 +498,34 @@ def main():
                 def send(sender, recipient, subject, body, contenttype, extraheaders=None, smtpserver=None):
                     if VERBOSE: print 'Not sending:', subject
 
-            if args and args[-1].isdigit(): run(int(args[-1]))
-            else: run()
+            if args and args[-1].isdigit():
+                run(int(args[-1]))
+            else:
+                run()
 
-        elif action == "add": add(*args)
+        elif action == "add":
+            add(*args)
 
         elif action == "new":
-            pickle.dump([], open(feedfile, 'w'))
+            new_feedfile(feedfile)
 
-        elif action == "list": list()
+        elif action == "list":
+            list()
 
-        elif action in ("help", "--help", "-h"): print __doc__
+        elif action in ("help", "--help", "-h"):
+            print __doc__
 
         elif action == "delete":
-            if not args:
-                raise InputError, "Action '%s' requires an argument" % action
-            elif args[0].isdigit():
-                delete(int(args[0]))
-            else:
-                raise InputError, "Action '%s' requires a number as its argument" % action
+            delete_feed(action, args)
 
         elif action in ("pause", "unpause"):
-            if not args:
-                raise InputError, "Action '%s' requires an argument" % action
-            elif args[0].isdigit():
-                active = (action == "unpause")
-                toggleactive(int(args[0]), active)
-            else:
-                raise InputError, "Action '%s' requires a number as its argument" % action
+            pause(action, args)
 
-        elif action == "reset": reset()
+        elif action == "reset":
+            reset()
 
-        elif action == "opmlexport": opmlexport()
+        elif action == "opmlexport":
+            opmlexport()
 
         elif action == "opmlimport":
             if not args:
