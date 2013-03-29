@@ -1,4 +1,4 @@
-### Options for configuring rss2email ###
+### Options for configuring rss2kindle ###
 
 # Readability
 READABILITY_CONSUMER_KEY = ''

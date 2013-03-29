@@ -1,2 +1,2 @@
 #!/bin/sh
-python rss2email.py feeds.dat $*
+python rss2kindle.py feeds.dat $*

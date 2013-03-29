@@ -1,6 +1,5 @@
 #!/usr/bin/python
-"""rss2email: get RSS feeds emailed to you
-http://rss2email.infogami.com
+"""rss2kindle: get RSS feeds delevered to your Kindle via Readability
 
 Usage:
   new (create new feedfile)
@@ -16,20 +15,14 @@ Usage:
 """
 import readability
 
-__version__ = "2.72"
+__version__ = "3.0"
 __author__ = "Lindsey Smith (lindsey@allthingsrss.com)"
 __copyright__ = "(C) 2004 Aaron Swartz. GNU GPL 2 or 3."
-___contributors__ = ["Dean Jackson", "Brian Lalor", "Joey Hess",
+___contributors__ = ["Jean-Philippe Caruana",
+                    "Dean Jackson", "Brian Lalor", "Joey Hess",
                      "Matej Cepl", "Martin 'Joey' Schulze",
                      "Marcel Ackermann (http://www.DreamFlasher.de)",
                      "Lindsey Smith (maintainer)", "Erik Hetzner", "Aaron Swartz (original author)"]
-
-import urllib2
-
-urllib2.install_opener(urllib2.build_opener())
-
-### Vaguely Customizable Options ###
-
 
 # Readability
 READABILITY_CONSUMER_KEY = ''
@@ -54,6 +47,9 @@ FEED_TIMEOUT = 60
 PROXY = ""
 
 
+import urllib2
+urllib2.install_opener(urllib2.build_opener())
+
 ### Load the Options ###
 
 # Read options from config file if present.
@@ -71,16 +67,6 @@ warn = sys.stderr
 
 from types import DictType
 import cPickle as pickle, os, traceback
-
-hash = ()
-try:
-    import hashlib
-
-    hash = hashlib.md5
-except ImportError:
-    import md5
-
-    hash = md5.new
 
 unix = 0
 try:
@@ -100,7 +86,7 @@ for e in ['error', 'gaierror']:
 
 import feedparser
 
-feedparser.USER_AGENT = "rss2email/" + __version__ + " +http://www.allthingsrss.com/rss2email/"
+feedparser.USER_AGENT = "rss2kindle/" + __version__ + " +http://www.allthingsrss.com/rss2kindle/"
 feedparser.SANITIZE_HTML = 0
 
 ### Utility Functions ###
@@ -300,12 +286,11 @@ def print_error(exc_type, feed, feednum, http_headers, http_result, http_status)
             feednum, feed.url, http_result.get("bozo_exception", "can't process"))
 
     else:
-        print >> warn, "=== rss2email encountered a problem with this feed ==="
-        print >> warn, "=== See the rss2email FAQ at http://www.allthingsrss.com/rss2email/ for assistance ==="
+        print >> warn, "=== rss2kindle encountered a problem with this feed ==="
         print >> warn, "=== If this occurs repeatedly, send this to lindsey@allthingsrss.com ==="
         print >> warn, "E:", http_result.get("bozo_exception", "can't process"), feed.url
         print >> warn, http_result
-        print >> warn, "rss2email", __version__
+        print >> warn, "rss2kindle", __version__
         print >> warn, "feedparser", feedparser.__version__
         print >> warn, "Python", sys.version
         print >> warn, "=== END HERE ==="
@@ -385,12 +370,11 @@ def run(num=None):
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
-                print >> warn, "=== rss2email encountered a problem with this feed ==="
-                print >> warn, "=== See the rss2email FAQ at http://www.allthingsrss.com/rss2email/ for assistance ==="
+                print >> warn, "=== rss2kindle encountered a problem with this feed ==="
                 print >> warn, "=== If this occurs repeatedly, send this to lindsey@allthingsrss.com ==="
                 print >> warn, "E: could not parse", feed.url
                 traceback.print_exc(file=warn)
-                print >> warn, "rss2email", __version__
+                print >> warn, "rss2kindle", __version__
                 print >> warn, "feedparser", feedparser.__version__
                 print >> warn, "Python", sys.version
                 print >> warn, "=== END HERE ==="
@@ -415,7 +399,7 @@ def opmlexport():
     feeds, feedfileObject = load(lock=0)
 
     if feeds:
-        print '<?xml version="1.0" encoding="UTF-8"?>\n<opml version="1.0">\n<head>\n<title>rss2email OPML export</title>\n</head>\n<body>'
+        print '<?xml version="1.0" encoding="UTF-8"?>\n<opml version="1.0">\n<head>\n<title>rss2kindle OPML export</title>\n</head>\n<body>'
         for f in feeds[1:]:
             url = xml.sax.saxutils.escape(f.url)
             print '<outline type="rss" text="%s" xmlUrl="%s"/>' % (url, url)
