@@ -484,9 +484,8 @@ def pause(action, args):
         raise InputError, "Action '%s' requires a number as its argument" % action
 
 
-def main():
-    global args, feedfile, action, send, active, e
-    args = sys.argv
+def main(args):
+    global feedfile, action, send, active, e
     try:
         if len(args) < 3:
             raise InputError, "insufficient args"
@@ -529,7 +528,7 @@ def main():
 
         elif action == "opmlimport":
             if not args:
-                raise InputError, "OPML import '%s' requires a filename argument" % action
+                raise InputError, "OPML import requires a filename argument"
             opmlimport(args[0])
 
         else:
@@ -541,4 +540,4 @@ def main():
         print __doc__
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)
