@@ -358,17 +358,11 @@ def run(num=None):
 
 
 def list():
-    feeds, feedfileObject = load(lock=0)
-
-    if feeds and isstr(feeds[0]):
-        default_to = feeds[0]
-        ifeeds = feeds[1:]
-        i = 1
-        print "default email:", default_to
-    else: ifeeds = feeds; i = 0
-    for f in ifeeds:
-        active = ('[ ]', '[*]')[f.active]
-        print `i` + ':', active, f.url
+    feeds, _ = load(lock=0)
+    i = 0
+    for feed in feeds:
+        active = ('[ ]', '[*]')[feed.active]
+        print `i` + ':', active, feed.url
         i += 1
 
 
