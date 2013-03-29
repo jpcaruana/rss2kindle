@@ -13,4 +13,4 @@ VERBOSE = 0
 FEED_TIMEOUT = 60
 
 # If you have an HTTP Proxy set this in the format 'http://your.proxy.here:8080/'
-PROXY=""
+PROXY = ""
