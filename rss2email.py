@@ -4,9 +4,8 @@ http://rss2email.infogami.com
 
 Usage:
   new [emailaddress] (create new feedfile)
-  email newemailaddress (update default email)
   run [--no-send] [num]
-  add feedurl [emailaddress]
+  add feedurl
   list
   reset
   delete n
@@ -162,10 +161,9 @@ def getID(entry):
 ### Simple Database of Feeds ###
 
 class Feed:
-    def __init__(self, url, to):
+    def __init__(self, url):
         self.url, self.etag, self.modified, self.seen = url, None, None, {}
         self.active = True
-        self.to = to
 
 
 def load(lock=1):
@@ -221,28 +219,16 @@ def parse(url, etag, modified):
 
 ### Program Functions ###
 
-def add(*args):
-    if len(args) == 2 and contains(args[1], '@') and not contains(args[1], '://'):
-        urls, to = [args[0]], args[1]
-    else:
-        urls, to = args, None
-
+def add(*urls):
     feeds, feedfileObject = load()
-    if (feeds and not isstr(feeds[0]) and to is None) or (not len(feeds) and to is None):
-        print "No email address has been defined. Please run 'r2e email emailaddress' or"
-        print "'r2e add url emailaddress'."
-        sys.exit(1)
-    for url in urls: feeds.append(Feed(url, to))
+    for url in urls:
+        feeds.append(Feed(url))
     unlock(feeds, feedfileObject)
 
 
 def run(num=None):
     feeds, feedfileObject = load()
-    smtpserver = None
     try:
-        # We store the default to address as the first item in the feeds list.
-        # Here we take it out and save it for later.
-        default_to = ""
         if feeds and isstr(feeds[0]): default_to = feeds[0]; ifeeds = feeds[1:]
         else: ifeeds = feeds
 
@@ -353,6 +339,7 @@ def run(num=None):
                     link = entry.get('link', "")
 
                     # TODO : call readability
+                    print link
 
                     f.seen[frameid] = id
 
@@ -373,25 +360,20 @@ def run(num=None):
 
     finally:
         unlock(feeds, feedfileObject)
-        if smtpserver:
-            smtpserver.quit()
 
 
 def list():
     feeds, feedfileObject = load(lock=0)
-    default_to = ""
 
     if feeds and isstr(feeds[0]):
-        default_to = feeds[0];
-        ifeeds = feeds[1:];
+        default_to = feeds[0]
+        ifeeds = feeds[1:]
         i = 1
         print "default email:", default_to
     else: ifeeds = feeds; i = 0
     for f in ifeeds:
         active = ('[ ]', '[*]')[f.active]
-        print `i` + ':', active, f.url, '(' + (f.to or ('default: ' + default_to)) + ')'
-        if not (f.to or default_to):
-            print "   W: Please define a default address with 'r2e email emailaddress'"
+        print `i` + ':', active, f.url
         i += 1
 
 
@@ -435,7 +417,7 @@ def opmlimport(importfile):
         if f.hasAttribute('xmlUrl'):
             feedurl = f.getAttribute('xmlUrl')
             print 'Adding %s' % xml.sax.saxutils.unescape(feedurl)
-            feeds.append(Feed(feedurl, None))
+            feeds.append(Feed(feedurl))
 
     unlock(feeds, feedfileObject)
 
@@ -501,18 +483,10 @@ if __name__ == '__main__':
             if args and args[-1].isdigit(): run(int(args[-1]))
             else: run()
 
-        elif action == "email":
-            if not args:
-                raise InputError, "Action '%s' requires an argument" % action
-            else:
-                email(args[0])
-
         elif action == "add": add(*args)
 
         elif action == "new":
-            if len(args) == 1: d = [args[0]]
-            else: d = []
-            pickle.dump(d, open(feedfile, 'w'))
+            pickle.dump([], open(feedfile, 'w'))
 
         elif action == "list": list()
 
