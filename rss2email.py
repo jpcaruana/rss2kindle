@@ -24,7 +24,6 @@ ___contributors__ = ["Dean Jackson", "Brian Lalor", "Joey Hess",
                      "Lindsey Smith (maintainer)", "Erik Hetzner", "Aaron Swartz (original author)" ]
 
 import urllib2
-import BeautifulSoup
 urllib2.install_opener(urllib2.build_opener())
 
 ### Vaguely Customizable Options ###
@@ -38,10 +37,6 @@ VERBOSE = 0
 # Set this to override the timeout (in seconds) for feed server response
 FEED_TIMEOUT = 60
 
-# Optional CSS styling
-USE_CSS_STYLING = 0
-STYLE_SHEET='h1 {font: 18pt Georgia, "Times New Roman";} body {font: 12pt Arial;} a:link {font: 12pt Arial; font-weight: bold; color: #0000cc} blockquote {font-family: monospace; }  .header { background: #e0ecff; border-bottom: solid 4px #c3d9ff; padding: 5px; margin-top: 0px; color: red;} .header a { font-size: 20px; text-decoration: none; } .footer { background: #c3d9ff; border-top: solid 4px #c3d9ff; padding: 5px; margin-bottom: 0px; } #entry {border: solid 4px #c3d9ff; } #body { margin-left: 5px; margin-right: 5px; }'
-
 # If you have an HTTP Proxy set this in the format 'http://your.proxy.here:8080/'
 PROXY=""
 
@@ -49,13 +44,6 @@ PROXY=""
 # Eventually (and theoretically) ISO-8859-1 and UTF-8 are our catch-all failsafes
 CHARSET_LIST='US-ASCII', 'BIG5', 'ISO-2022-JP', 'ISO-8859-1', 'UTF-8'
 
-# Note: You can also override the send function.
-
-# Use Unicode characters instead of their ascii psuedo-replacements
-UNICODE_SNOB = 0
-
-# Put the links after each paragraph instead of at the end.
-LINKS_EACH_PARAGRAPH = 0
 
 ### Load the Options ###
 
@@ -71,7 +59,7 @@ warn = sys.stderr
 
 ### Import Modules ###
 
-import cPickle as pickle, time, os, traceback, types
+import cPickle as pickle, time, os, traceback
 
 hash = ()
 try:
@@ -98,12 +86,6 @@ import feedparser
 feedparser.USER_AGENT = "rss2email/"+__version__+ " +http://www.allthingsrss.com/rss2email/"
 feedparser.SANITIZE_HTML = 0
 
-import html2text as h2t
-
-h2t.UNICODE_SNOB = UNICODE_SNOB
-h2t.LINKS_EACH_PARAGRAPH = LINKS_EACH_PARAGRAPH
-html2text = h2t.html2text
-
 from types import *
 
 ### Utility Functions ###
@@ -114,7 +96,6 @@ class TimeoutError(Exception): pass
 class InputError(Exception): pass
 
 def timelimit(timeout, function):
-#    def internal(function):
         def internal2(*args, **kw):
             """
             from http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/473878
@@ -147,51 +128,8 @@ def timelimit(timeout, function):
 def isstr(f): return isinstance(f, type('')) or isinstance(f, type(u''))
 def ishtml(t): return type(t) is type(())
 def contains(a,b): return a.find(b) != -1
-def unu(s): # I / freakin' hate / that unicode
-	if type(s) is types.UnicodeType: return s.encode('utf-8')
-	else: return s
 
 ### Parsing Utilities ###
-
-def getContent(entry, HTMLOK=0):
-	"""Select the best content from an entry, deHTMLizing if necessary.
-	If raw HTML is best, an ('HTML', best) tuple is returned. """
-
-	# How this works:
-	#  * We have a bunch of potential contents.
-	#  * We go thru looking for our first choice.
-	#    (HTML or text, depending on HTMLOK)
-	#  * If that doesn't work, we go thru looking for our second choice.
-	#  * If that still doesn't work, we just take the first one.
-	#
-	# Possible future improvement:
-	#  * Instead of just taking the first one
-	#    pick the one in the "best" language.
-	#  * HACK: hardcoded HTMLOK, should take a tuple of media types
-
-	conts = entry.get('content', [])
-
-	if entry.get('summary_detail', {}):
-		conts += [entry.summary_detail]
-
-	if conts:
-		if HTMLOK:
-			for c in conts:
-				if contains(c.type, 'html'): return ('HTML', c.value)
-
-		if not HTMLOK: # Only need to convert to text if HTML isn't OK
-			for c in conts:
-				if contains(c.type, 'html'):
-					cleanerhtml = BeautifulSoup.BeautifulSoup(c.value)
-					return html2text(unicode(cleanerhtml))
-
-		for c in conts:
-			if c.type == 'text/plain': return c.value
-
-		return conts[0].value
-
-	return ""
-
 def getID(entry):
 	"""Get best ID from an entry.
 	NEEDS UNIT TESTS"""
@@ -203,10 +141,7 @@ def getID(entry):
 
 			return entry.id
 
-	content = getContent(entry)
-	if content and content != "\n": return hash(unu(content)).hexdigest()
 	if 'link' in entry: return entry.link
-	if 'title' in entry: return hash(unu(entry.title)).hexdigest()
 
 
 ### Simple Database of Feeds ###
@@ -370,7 +305,6 @@ def run(num=None):
 						print >>warn, r
 						print >>warn, "rss2email", __version__
 						print >>warn, "feedparser", feedparser.__version__
-						print >>warn, "html2text", h2t.__version__
 						print >>warn, "Python", sys.version
 						print >>warn, "=== END HERE ==="
 					continue
@@ -414,7 +348,6 @@ def run(num=None):
 				traceback.print_exc(file=warn)
 				print >>warn, "rss2email", __version__
 				print >>warn, "feedparser", feedparser.__version__
-				print >>warn, "html2text", h2t.__version__
 				print >>warn, "Python", sys.version
 				print >>warn, "=== END HERE ==="
 				continue
@@ -533,7 +466,7 @@ if __name__ == '__main__':
 		if action == "run":
 			if args and args[0] == "--no-send":
 				def send(sender, recipient, subject, body, contenttype, extraheaders=None, smtpserver=None):
-					if VERBOSE: print 'Not sending:', unu(subject)
+					if VERBOSE: print 'Not sending:', subject
 
 			if args and args[-1].isdigit(): run(int(args[-1]))
 			else: run()
