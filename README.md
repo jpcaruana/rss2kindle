@@ -7,18 +7,40 @@ I don't want email, I want RSS feeds delivered to my Kindle (via readability)
 
 install
 =======
-* git clone 
-* cd rss2kindle
-* virtualenv env
-* . env/bin/activate
-* pip install -r requirements.txt
+````bash
+git clone https://github.com/jpcaruana/rss2kindle.git
+cd rss2kindle
+virtualenv env
+. env/bin/activate
+pip install -r requirements.txt
+````
+
+configuration
+============
+````bash
+cp config.py.example config.py
+````
+
+Then, edit your config.py file and fill READABILITY fields :
+````python
+# Readability : see https://www.readability.com/account/api
+READABILITY_CONSUMER_KEY = 'Reader API Key : Key field'
+READABILITY_CONSUMER_SECRET = 'Reader API Key : Secret field'
+
+READABILITY_USER = 'your login on readability.com'
+READABILITY_PASSWORD = 'your password on readability.com'
+````
+
+
 
 usage
-======
-* . env/bin/activate
-* ./r2k
+=====
+````bash
+cd rss2kindle
+virtualenv env
+. env/bin/activate
+./r2k
 
-````
 rss2kindle: get RSS feeds delevered to your Kindle via Readability
 
 Usage:
@@ -32,6 +54,11 @@ Usage:
   unpause n
   opmlexport
   opmlimport filename
+````
+
+````bash
+./r2k add https://github.com/jpcaruana/rss2kindle/commits/master.atom
+./r2k run
 ````
 
 automating
