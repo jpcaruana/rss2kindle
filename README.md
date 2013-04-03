@@ -57,5 +57,5 @@ Usage:
 ## automating calls to Readability
 in a crontab, for instance every hour :
 ````
-0 * * * * cd /path/to/rss2kindle && ./r2k run
+0 * * * * cd /path/to/rss2kindle && . env/bin/activate && ./r2k run
 ````
