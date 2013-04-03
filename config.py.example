@@ -8,8 +8,8 @@ READABILITY_USER = 'your login on readability.com'
 READABILITY_PASSWORD = 'your password on readability.com'
 
 
-# 1: Receive one email per post.
-# 0: Receive an email every time a post changes.
+# 1: Call Readability once per post.
+# 0: Call Readability every time a post changes.
 TRUST_GUID = 1
 
 # 1: Name feeds as they're being processed.
