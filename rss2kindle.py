@@ -14,6 +14,7 @@ Usage:
   opmlimport filename
 """
 import readability
+from readability.api import ResponseError
 
 __version__ = "3.0"
 __author__ = "Lindsey Smith (lindsey@allthingsrss.com)"
@@ -236,9 +237,13 @@ def ifeeds(feeds, num):
     return ifeeds
 
 
-def read_later(link, rdd):
-    bookmark = rdd.add_bookmark(url=link)
-    print bookmark
+def read_later(link, user, password):
+    rdd = readability_login(user, password)
+    try:
+        bookmark = rdd.add_bookmark(url=link)
+        print "   send %s: %s" % (link, bookmark)
+    except ResponseError, e:
+        print "   failure in sending %s: %s" % (link, e)
 
 
 def print_error(exc_type, feed, feednum, http_headers, http_result, http_status):
@@ -299,7 +304,6 @@ def readability_login(user, password):
 
 def run(num=None):
     feeds, feedfileObject = load()
-    rdd = readability_login(READABILITY_USER, READABILITY_PASSWORD)
     try:
         for feednum, feed in enumerate(ifeeds(feeds, num)):
             try:
@@ -357,7 +361,7 @@ def run(num=None):
 
                     link = entry.get('link', "")
 
-                    read_later(link, rdd)
+                    read_later(link, READABILITY_USER, READABILITY_PASSWORD)
 
                     feed.seen[frameid] = id
 
@@ -510,7 +514,7 @@ def main(args):
 
         if action == "run":
             if args and args[0] == "--no-send":
-                def read_later(link, rdd):
+                def read_later(link, user, password):
                     if VERBOSE:
                         print 'Not sending:', link
 
