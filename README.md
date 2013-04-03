@@ -1,12 +1,9 @@
-rss2kindle
-==========
+# rss2kindle
 
-fork from turbodog/rss2email (very ugly code, but I am lazy).
+fork from turbodog/rss2email (very ugly code, but I am lazy). I took very little time to work on this. I just wanted to fulfill my needs.
+**I don't want email**, I want RSS feeds delivered to my **Kindle** (via readability).
 
-I don't want email, I want RSS feeds delivered to my Kindle (via readability)
-
-install
-=======
+## how to install
 ````bash
 git clone https://github.com/jpcaruana/rss2kindle.git
 cd rss2kindle
@@ -15,13 +12,12 @@ virtualenv env
 pip install -r requirements.txt
 ````
 
-configuration
-============
+## configuration
 ````bash
 cp config.py.example config.py
 ````
 
-Then, edit your config.py file and fill READABILITY fields :
+Then, edit your config.py file and fill *READABILITY* fields :
 ````python
 # Readability : see https://www.readability.com/account/api
 READABILITY_CONSUMER_KEY = 'Reader API Key : Key field'
@@ -31,10 +27,7 @@ READABILITY_USER = 'your login on readability.com'
 READABILITY_PASSWORD = 'your password on readability.com'
 ````
 
-
-
-usage
-=====
+## usage
 ````bash
 cd rss2kindle
 virtualenv env
@@ -61,8 +54,7 @@ Usage:
 ./r2k run
 ````
 
-automating
-==========
+## automating calls to Readability
 in a crontab, for instance every hour :
 ````
 0 * * * * cd /path/to/rss2kindle && ./r2k run
