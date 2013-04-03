@@ -1,11 +1,11 @@
 ### Options for configuring rss2kindle ###
 
-# Readability
-READABILITY_CONSUMER_KEY = ''
-READABILITY_CONSUMER_SECRET = ''
+# Readability : see https://www.readability.com/account/api
+READABILITY_CONSUMER_KEY = 'Reader API Key : Key field'
+READABILITY_CONSUMER_SECRET = 'Reader API Key : Secret field'
 
-READABILITY_USER = ''
-READABILITY_PASSWORD = ''
+READABILITY_USER = 'your login on readability.com'
+READABILITY_PASSWORD = 'your password on readability.com'
 
 
 # 1: Receive one email per post.
