@@ -1,6 +1,7 @@
 config.py
 feeds.dat
 *.pyc
+*.pyo
 .idea
 *.iml
 env
