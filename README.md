@@ -46,6 +46,7 @@ Usage:
   delete n
   pause n
   unpause n
+  archiveall
   opmlexport
   opmlimport filename
 ````
