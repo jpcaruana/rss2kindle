@@ -12,6 +12,7 @@ Usage:
   unpause n
   opmlexport
   opmlimport filename
+  archiveall
 """
 import readability
 from readability.api import ResponseError
@@ -504,6 +505,15 @@ def pause(action, args):
         raise InputError, "Action '%s' requires a number as its argument" % action
 
 
+def archiveall():
+    rdd = readability_login(READABILITY_USER, READABILITY_PASSWORD)
+    bookmarks = rdd.get_bookmarks(archive=False)
+    for bookmark in bookmarks:
+        print "archiving %s" % bookmark.article.title
+        bookmark.archive = True
+        bookmark.update()
+
+
 def main(args):
     global feedfile, action, read_later, active, e
     try:
@@ -551,6 +561,9 @@ def main(args):
             if not args:
                 raise InputError, "OPML import requires a filename argument"
             opmlimport(args[0])
+
+        elif action == "archiveall":
+            archiveall()
 
         else:
             raise InputError, "Invalid action"
