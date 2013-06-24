@@ -361,8 +361,10 @@ def run(num=None):
                         continue
 
                     link = entry.get('link', "")
+                    title = entry.get('title', "")
 
-                    read_later(link, READABILITY_USER, READABILITY_PASSWORD)
+                    if 'Four short links' not in title and 'is a GitHubber' not in title and 'Drinkup' not in title:
+                        read_later(link, READABILITY_USER, READABILITY_PASSWORD)
 
                     feed.seen[frameid] = id
 
