@@ -1,3 +1,6 @@
+v3.2
+	* start script with virtualenv
+
 v3.1
    * archiveall command (via @bamthomas)
 v3.0
