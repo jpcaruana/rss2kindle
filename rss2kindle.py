@@ -518,6 +518,8 @@ def archiveall():
 
 def main(args):
     global feedfile, action, read_later, active, e
+    print "--------------------------------------------------------------------"
+    print "rss2kndle started"
     try:
         if len(args) < 3:
             raise InputError, "insufficient args"
@@ -574,6 +576,9 @@ def main(args):
         print "E:", e
         print
         print __doc__
+
+    print "rss2kndle ended"
+    print "--------------------------------------------------------------------"
 
 if __name__ == '__main__':
     main(sys.argv)
