@@ -5,3 +5,5 @@ feeds.dat
 .idea
 *.iml
 env
+nohup.out
+build
