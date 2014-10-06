@@ -289,7 +289,6 @@ def print_error(exc_type, feed, feednum, http_headers, http_result, http_status)
 
     else:
         print >> warn, "=== rss2kindle encountered a problem with this feed ==="
-        print >> warn, "=== If this occurs repeatedly, send this to lindsey@allthingsrss.com ==="
         print >> warn, "E:", http_result.get("bozo_exception", "can't process"), feed.url
         print >> warn, http_result
         print >> warn, "rss2kindle", __version__
@@ -373,7 +372,6 @@ def run(num=None):
                 raise
             except:
                 print >> warn, "=== rss2kindle encountered a problem with this feed ==="
-                print >> warn, "=== If this occurs repeatedly, send this to lindsey@allthingsrss.com ==="
                 print >> warn, "E: could not parse", feed.url
                 traceback.print_exc(file=warn)
                 print >> warn, "rss2kindle", __version__
