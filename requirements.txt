@@ -1,2 +1,2 @@
 feedparser==5.1.3
-readability-api==0.1.3
+readability-api==1.0.1
