@@ -240,8 +240,6 @@ def ifeeds(feeds, num):
 
 
 def read_later(link, user, password):
-    #token_key, token_secret = readability_login(READABILITY_USER, READABILITY_PASSWORD)
-    token_key, token_secret = xauth(username=READABILITY_USER, password=READABILITY_PASSWORD)
     rdd = readability_login(user, password)
     try:
         bookmark = rdd.add_bookmark(url=link)
@@ -301,7 +299,7 @@ def print_error(exc_type, feed, feednum, http_headers, http_result, http_status)
 
 
 def readability_login(user, password):
-    token_key, token_secret = xauth(username=user, password=password)
+    token_key, token_secret = xauth(username=user, password=password, consumer_key=READABILITY_CONSUMER_KEY, consumer_secret=READABILITY_CONSUMER_SECRET)
     rdd = ReaderClient(
         token_key=token_key,
         token_secret=token_secret,
@@ -514,7 +512,6 @@ def pause(action, args):
 
 
 def archiveall():
-    token_key, token_secret = readability_login(READABILITY_USER, READABILITY_PASSWORD)
     rdd = readability_login(READABILITY_USER, READABILITY_PASSWORD)
     bookmarks = rdd.get_bookmarks(archive=False)
     for bookmark in bookmarks:
