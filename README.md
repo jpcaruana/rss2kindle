@@ -18,14 +18,15 @@ pip install -r requirements.txt
 cp config.py.example config.py
 ````
 
-Then, edit your config.py file and fill *READABILITY* fields :
+Then, edit your config.py file and fill *WALLABAG* fields :
 ````python
-# Readability : see https://www.readability.com/account/api
-READABILITY_CONSUMER_KEY = 'Reader API Key : Key field'
-READABILITY_CONSUMER_SECRET = 'Reader API Key : Secret field'
+# Wallabag
+WALLABAG_URL = 'https://www.wallabag.it/'
+WALLABAG_USERNAME = 'Your username'
+WALLABAG_PASSWORD = 'Your passwrod associated with your username'
+WALLABAG_CLIENT_ID = 'Your client ID (se Wallabag documentation)'
+WALLABAG_CLIENT_SECRET = 'Your client secret key (se Wallabag documentation)'
 
-READABILITY_USER = 'your login on readability.com'
-READABILITY_PASSWORD = 'your password on readability.com'
 ````
 
 ## usage
@@ -35,7 +36,7 @@ virtualenv env
 . env/bin/activate
 ./r2k
 
-rss2kindle: get RSS feeds delevered to your Kindle via Readability
+rss2kindle: get RSS feeds delevered to your Wallabag account
 
 Usage:
   new (create new feedfile)
@@ -56,7 +57,7 @@ Usage:
 ./r2k run
 ````
 
-## automating calls to Readability
+## automating calls to Wallabag
 in a crontab, for instance every hour :
 ````
 0 * * * * cd /path/to/rss2kindle && . env/bin/activate && ./r2k run

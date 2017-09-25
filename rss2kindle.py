@@ -1,5 +1,5 @@
 #!/usr/bin/python
-"""rss2kindle: get RSS feeds delevered to your Kindle via Readability
+"""rss2kindle: get RSS feeds delevered to your Wallabag account
 
 Usage:
   new (create new feedfile)
@@ -14,11 +14,12 @@ Usage:
   opmlimport filename
   archiveall
 """
-import readability
-from readability import ReaderClient
-from readability import xauth
 
-__version__ = "3.1"
+import aiohttp
+import asyncio
+from wallabag_api.wallabag import Wallabag
+
+__version__ = "4.0"
 __author__ = "Lindsey Smith (lindsey@allthingsrss.com)"
 __copyright__ = "(C) 2004 Aaron Swartz. GNU GPL 2 or 3."
 ___contributors__ = ["Jean-Philippe Caruana",
@@ -27,12 +28,12 @@ ___contributors__ = ["Jean-Philippe Caruana",
                      "Marcel Ackermann (http://www.DreamFlasher.de)",
                      "Lindsey Smith (maintainer)", "Erik Hetzner", "Aaron Swartz (original author)"]
 
-# Readability
-READABILITY_CONSUMER_KEY = ''
-READABILITY_CONSUMER_SECRET = ''
-
-READABILITY_USER = ''
-READABILITY_PASSWORD = ''
+# Wallabag
+WALLABAG_URL = ''
+WALLABAG_USERNAME = ''
+WALLABAG_PASSWORD = ''
+WALLABAG_CLIENT_ID = ''
+WALLABAG_CLIENT_SECRET = ''
 
 
 # 1: Receive one email per post.
@@ -239,13 +240,28 @@ def ifeeds(feeds, num):
     return ifeeds
 
 
-def read_later(link, user, password):
-    rdd = readability_login(user, password)
-    try:
-        bookmark = rdd.add_bookmark(url=link)
-        print "   send %s: %s" % (link, bookmark)
-    except e:
-        print "   failure in sending %s: %s" % (link, e)
+def read_later(link):
+    params = {'username': WALLABAG_USERNAME,
+              'password': WALLABAG_PASSWORD,
+              'client_id': WALLABAG_CLIENT_ID,
+              'client_secret': WALLABAG_CLIENT_SECRET}
+    token = await Wallabag.get_token(host=WALLABAG_URL, **params)
+
+    async with aiohttp.ClientSession(loop=loop) as session:
+        wall = Wallabag(host=WALLABAG_URL,
+                        client_secret=params.get('client_secret'),
+                        client_id=params.get('client_id'),
+                        token=token,
+                        aio_sess=session)
+
+        url = 'https://foxmask.trigger-happy.eu'
+        title = 'foxmask\'s  blog'
+
+        try:
+            await wall.post_entries(link, '', '', 0, 0)
+            print "   send %s" % (link)
+        except e:
+            print "   failure in sending %s: %s" % (link, e)
 
 
 def print_error(exc_type, feed, feednum, http_headers, http_result, http_status):
@@ -296,16 +312,6 @@ def print_error(exc_type, feed, feednum, http_headers, http_result, http_status)
         print >> warn, "feedparser", feedparser.__version__
         print >> warn, "Python", sys.version
         print >> warn, "=== END HERE ==="
-
-
-def readability_login(user, password):
-    token_key, token_secret = xauth(username=user, password=password, consumer_key=READABILITY_CONSUMER_KEY, consumer_secret=READABILITY_CONSUMER_SECRET)
-    rdd = ReaderClient(
-        token_key=token_key,
-        token_secret=token_secret,
-        consumer_key=READABILITY_CONSUMER_KEY,
-        consumer_secret=READABILITY_CONSUMER_SECRET)
-    return rdd
 
 
 def run(num=None):
@@ -369,7 +375,7 @@ def run(num=None):
                     title = entry.get('title', "")
 
                     if 'Four short links' not in title and 'is a GitHubber' not in title and 'Drinkup' not in title:
-                        read_later(link, READABILITY_USER, READABILITY_PASSWORD)
+                        read_later(link)
 
                     feed.seen[frameid] = id
 
@@ -511,15 +517,6 @@ def pause(action, args):
         raise InputError, "Action '%s' requires a number as its argument" % action
 
 
-def archiveall():
-    rdd = readability_login(READABILITY_USER, READABILITY_PASSWORD)
-    bookmarks = rdd.get_bookmarks(archive=False)
-    for bookmark in bookmarks:
-        print "archiving %s" % bookmark.article.title
-        bookmark.archive = True
-        bookmark.update()
-
-
 def main(args):
     global feedfile, action, read_later, active, e
     print "--------------------------------------------------------------------"
@@ -532,7 +529,7 @@ def main(args):
 
         if action == "run":
             if args and args[0] == "--no-send":
-                def read_later(link, user, password):
+                def read_later(link):
                     if VERBOSE:
                         print 'Not sending:', link
 
@@ -569,9 +566,6 @@ def main(args):
             if not args:
                 raise InputError, "OPML import requires a filename argument"
             opmlimport(args[0])
-
-        elif action == "archiveall":
-            archiveall()
 
         else:
             raise InputError, "Invalid action"

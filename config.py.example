@@ -1,15 +1,15 @@
 ### Options for configuring rss2kindle ###
 
-# Readability : see https://www.readability.com/account/api
-READABILITY_CONSUMER_KEY = 'Reader API Key : Key field'
-READABILITY_CONSUMER_SECRET = 'Reader API Key : Secret field'
+# Wallabag
+WALLABAG_URL = 'https://www.wallabag.it/'
+WALLABAG_USERNAME = 'Your username'
+WALLABAG_PASSWORD = 'Your passwrod associated with your username'
+WALLABAG_CLIENT_ID = 'Your client ID (se Wallabag documentation)'
+WALLABAG_CLIENT_SECRET = 'Your client secret key (se Wallabag documentation)'
 
-READABILITY_USER = 'your login on readability.com'
-READABILITY_PASSWORD = 'your password on readability.com'
 
-
-# 1: Call Readability once per post.
-# 0: Call Readability every time a post changes.
+# 1: Call Wallabag once per post.
+# 0: Call Wallabag every time a post changes.
 TRUST_GUID = 1
 
 # 1: Name feeds as they're being processed.

@@ -1,3 +1,8 @@
+v4.0
+  * readability is dead, we now use Wallabag
+  * python 3.6 is needed to run (wallabag api depends on it)
+
+
 v3.2
 	* start script with virtualenv
 

@@ -1,2 +1,2 @@
 #!/bin/sh
-. env/bin/activate && python rss2kindle.py feeds.dat $*
+python rss2kindle.py feeds.dat $*
