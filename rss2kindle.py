@@ -69,7 +69,8 @@ warn = sys.stderr
 
 ### Import Modules ###
 
-import pickle, os, traceback
+import json
+import os, traceback
 
 unix = 0
 try:
@@ -91,6 +92,7 @@ import feedparser
 
 feedparser.USER_AGENT = "rss2kindle/" + __version__ + " +http://www.allthingsrss.com/rss2kindle/"
 feedparser.SANITIZE_HTML = 0
+feedfileObject = None
 
 ### Utility Functions ###
 
@@ -161,48 +163,23 @@ class Feed:
         self.url, self.etag, self.modified, self.seen = url, None, None, {}
         self.active = True
 
+    #def __dict__(self):
+    #    return {'url': self.url, 'modified': self.modified, 'seen': self.seen}
+
 
 def load(lock=1):
     if not os.path.exists(feedfile):
         print ('Feedfile "%s" does not exist.  If you\'re using r2e for the first time, you' % feedfile)
         print ("have to run 'r2e new' first.")
         sys.exit(1)
-    try:
-        feedfileObject = open(feedfile, 'r')
-    except IOError as e:
-        print ("Feedfile could not be opened: %s" % e)
-        sys.exit(1)
-    feeds = pickle.load(feedfileObject)
 
-    if lock:
-        locktype = 0
-        if unix:
-            locktype = fcntl.LOCK_EX
-            fcntl.flock(feedfileObject.fileno(), locktype)
-            #HACK: to deal with lock caching
-        feedfileObject = open(feedfile, 'r')
-        feeds = pickle.load(feedfileObject)
-        if unix:
-            fcntl.flock(feedfileObject.fileno(), locktype)
-    if feeds:
-        for feed in feeds[1:]:
-            if not hasattr(feed, 'active'):
-                feed.active = True
-
-    return feeds, feedfileObject
-
+    with open(feedfile, 'r') as infile:
+        feeds = json.load(infile)
+        return feeds, None
 
 def unlock(feeds, feedfileObject):
-    if not unix:
-        pickle.dump(feeds, open(feedfile, 'w'))
-    else:
-        fd = open(feedfile + '.tmp', 'w')
-        pickle.dump(feeds, fd)
-        fd.flush()
-        os.fsync(fd.fileno())
-        fd.close()
-        os.rename(feedfile + '.tmp', feedfile)
-        fcntl.flock(feedfileObject.fileno(), fcntl.LOCK_UN)
+    with open('feedfile', "w") as outfile:
+        json.dump([f.__dict__ for f in feeds], outfile)
 
 #@timelimit(FEED_TIMEOUT)
 def parse(url, etag, modified):
@@ -216,8 +193,11 @@ def parse(url, etag, modified):
 ### Program Functions ###
 
 def add(*urls):
-    feeds, feedfileObject = load()
+    feeds, _ = load()
     for url in urls:
+        print (type(feeds))
+        print (feeds)
+        print( url)
         feeds.append(Feed(url))
     unlock(feeds, feedfileObject)
 
@@ -485,7 +465,8 @@ def reset():
 
 
 def new_feedfile(feedfile):
-    pickle.dump([], open(feedfile, 'w'))
+    with open(feedfile, "w") as outfile:
+        json.dump([], outfile)
 
 
 def delete_feed(action, args):
